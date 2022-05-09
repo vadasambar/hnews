@@ -1,0 +1,20 @@
+# permissions for end users to view hnews.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hnews-viewer-role
+rules:
+- apiGroups:
+  - apps.vadasambar.com
+  resources:
+  - hnews
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps.vadasambar.com
+  resources:
+  - hnews/status
+  verbs:
+  - get

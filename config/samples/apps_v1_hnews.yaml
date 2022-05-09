@@ -1,0 +1,6 @@
+apiVersion: apps.vadasambar.com/v1
+kind: HNews
+metadata:
+  name: hnews-sample
+spec:
+  # TODO(user): Add fields here

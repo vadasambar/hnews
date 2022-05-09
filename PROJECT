@@ -1,0 +1,16 @@
+domain: vadasambar.com
+layout:
+- go.kubebuilder.io/v3
+projectName: hnews
+repo: github.com/vadasambar/hnews
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: vadasambar.com
+  group: apps
+  kind: HNews
+  path: github.com/vadasambar/hnews/api/v1
+  version: v1
+version: "3"
