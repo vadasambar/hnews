@@ -20,22 +20,57 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+type Type string
+
+// Based on the possible types specified in https://github.com/HackerNews/API#items
+const (
+	Story   Type = "story"
+	Comment Type = "comment"
+	Job     Type = "job"
+	Poll    Type = "poll"
+	PollOpt Type = "pollopt"
+)
+
+// Generated using https://mholt.github.io/json-to-go/
+// by converting get Id http json response to go struct
+type GetIdResponse struct {
+	By          string `json:"by"`
+	Descendants int    `json:"descendants"`
+	ID          int    `json:"id"`
+	Kids        []int  `json:"kids"`
+	Score       int    `json:"score"`
+	Time        int    `json:"time"`
+	Title       string `json:"title"`
+	Type        Type   `json:"type"`
+	URL         string `json:"url"`
+}
+
+type Filter struct {
+	Limit       int        `json:"limit"`
+	Type        string     `json:"type"`
+	Score       Comparison `json:"score"`
+	Descendants Comparison `json:"descendents"`
+}
+
+type Comparison string
 
 // HNewsSpec defines the desired state of HNews
 type HNewsSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of HNews. Edit hnews_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Filter Filter `json:"filter"`
 }
 
 // HNewsStatus defines the observed state of HNews
 type HNewsStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Links Link `json:"link"`
+}
+
+type Link struct {
+	Url         string `json:"url"`
+	Descendents int    `json:"descendents"`
+	Score       int    `json:"score"`
 }
 
 //+kubebuilder:object:root=true

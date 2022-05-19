@@ -3,4 +3,7 @@ kind: HNews
 metadata:
   name: hnews-sample
 spec:
-  # TODO(user): Add fields here
+  filter:
+    score: ">300"
+    limit: 6
+    descendents: ">10"
