@@ -51,8 +51,6 @@ spec:
                 - score
                 - type
                 type: object
-            required:
-            - filter
             type: object
           status:
             description: HNewsStatus defines the observed state of HNews
@@ -60,21 +58,32 @@ spec:
               link:
                 description: 'Important: Run "make" to regenerate code after modifying
                   this file'
-                properties:
-                  descendents:
-                    type: integer
-                  score:
-                    type: integer
-                  url:
-                    type: string
-                required:
-                - descendents
-                - score
-                - url
-                type: object
+                items:
+                  properties:
+                    article_url:
+                      description: ArticleUrl refers to the URL which is shared on
+                        the HNews page above e.g., https://swelltype.com/yep-i-created-the-new-avatar-font/
+                      type: string
+                    descendents:
+                      type: integer
+                    hnews_url:
+                      description: HNewsUrl refers to the URL of the HNews page e.g.,
+                        https://news.ycombinator.com/item?id=31316372
+                      type: string
+                    score:
+                      type: integer
+                  required:
+                  - article_url
+                  - descendents
+                  - hnews_url
+                  - score
+                  type: object
+                type: array
             required:
             - link
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

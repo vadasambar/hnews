@@ -58,7 +58,7 @@ type Comparison string
 
 // HNewsSpec defines the desired state of HNews
 type HNewsSpec struct {
-	Filter Filter `json:"filter"`
+	Filter Filter `json:"filter,omitempty"`
 }
 
 // HNewsStatus defines the observed state of HNews
@@ -86,7 +86,7 @@ type HNews struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   HNewsSpec   `json:"spec,omitempty"`
+	Spec   HNewsSpec   `json:"spec"`
 	Status HNewsStatus `json:"status,omitempty"`
 }
 
