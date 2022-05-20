@@ -43,6 +43,8 @@ type HNewsReconciler struct {
 }
 
 var (
+	// scoreRegex is the regex for conditions ">[number-here]", ">=[number-here]", "<[number-here]",
+	// "<=[number-here]", "!=[number-here]" and "=[number-here]"
 	scoreRegex = regexp.MustCompile("^[[:space:]]*(>|>=|=|!=|<|<=)[[:space:]]*([[:digit:]]+[[:space:]]*$)")
 )
 
@@ -73,7 +75,6 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// RESUME HERE
 	if hn.Spec.Filter.Type == "" {
 		hn.Spec.Filter.Type = string(appsv1.Story)
 	}
@@ -169,6 +170,10 @@ func (r *HNewsReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+// evalCond takes a value and a condition
+// and evaluates the condition on the value
+// e.g., value = 5, cond = "<10"
+// evalCond would do 5 < 10 => returns true
 func evalCond(value int, cond appsv1.Comparison) bool {
 	// https: //play.golang.com/p/B8ZgghEBK4k
 

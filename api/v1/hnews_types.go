@@ -68,7 +68,11 @@ type HNewsStatus struct {
 }
 
 type Link struct {
-	HNewsUrl    string `json:"hnews_url"`
+	// HNewsUrl refers to the URL of the HNews page
+	// e.g., https://news.ycombinator.com/item?id=31316372
+	HNewsUrl string `json:"hnews_url"`
+	// ArticleUrl refers to the URL which is shared on the HNews page above
+	// e.g., https://swelltype.com/yep-i-created-the-new-avatar-font/
 	ArticleUrl  string `json:"article_url"`
 	Descendents int    `json:"descendents"`
 	Score       int    `json:"score"`
