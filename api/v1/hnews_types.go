@@ -64,11 +64,12 @@ type HNewsSpec struct {
 // HNewsStatus defines the observed state of HNews
 type HNewsStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
-	Links Link `json:"link"`
+	Links []Link `json:"link"`
 }
 
 type Link struct {
-	Url         string `json:"url"`
+	HNewsUrl    string `json:"hnews_url"`
+	ArticleUrl  string `json:"article_url"`
 	Descendents int    `json:"descendents"`
 	Score       int    `json:"score"`
 }

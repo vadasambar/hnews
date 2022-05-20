@@ -46,40 +46,6 @@ var (
 	scoreRegex = regexp.MustCompile("^[[:space:]]*(>|>=|=|!=|<|<=)[[:space:]]*([[:digit:]]+[[:space:]]*$)")
 )
 
-type Type string
-
-// Based on the possible types specified in https://github.com/HackerNews/API#items
-const (
-	Story   Type = "story"
-	Comment Type = "comment"
-	Job     Type = "job"
-	Poll    Type = "poll"
-	PollOpt Type = "pollopt"
-)
-
-// Generated using https://mholt.github.io/json-to-go/
-// by converting get Id http json response to go struct
-type GetIdResponse struct {
-	By          string `json:"by"`
-	Descendants int    `json:"descendants"`
-	ID          int    `json:"id"`
-	Kids        []int  `json:"kids"`
-	Score       int    `json:"score"`
-	Time        int    `json:"time"`
-	Title       string `json:"title"`
-	Type        Type   `json:"type"`
-	URL         string `json:"url"`
-}
-
-type Filter struct {
-	Limit       int        `json:"limit"`
-	Type        string     `json:"type"`
-	Score       Comparison `json:"score"`
-	Descendants Comparison `json:"descendents"`
-}
-
-type Comparison string
-
 //+kubebuilder:rbac:groups=apps.vadasambar.com,resources=hnews,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.vadasambar.com,resources=hnews/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps.vadasambar.com,resources=hnews/finalizers,verbs=update
@@ -108,10 +74,31 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	// RESUME HERE
-	// defaultFiltersSet := true
-	// if hn.Spec.Filter.Type == "" || hn.Spec.Filter.Limit == 0 || hn.Spec.Filter.Score == "" || hn.Spec.Filter.Descendants == "" {
-	// 	defaultFiltersSet = false
-	// }
+	if hn.Spec.Filter.Type == "" {
+		hn.Spec.Filter.Type = string(appsv1.Story)
+	}
+
+	if hn.Spec.Filter.Limit == 0 {
+		hn.Spec.Filter.Limit = 5
+	}
+
+	if hn.Spec.Filter.Score == "" {
+		hn.Spec.Filter.Score = ">200"
+	}
+
+	if hn.Spec.Filter.Descendants == "" {
+		hn.Spec.Filter.Descendants = ">5"
+	}
+
+	if hn.Spec.Filter.Type == "" || hn.Spec.Filter.Limit == 0 || hn.Spec.Filter.Score == "" || hn.Spec.Filter.Descendants == "" {
+		if err := r.Update(ctx, &hn); err != nil {
+			log.Log.Error(err, "unable to update hnews", "name", req.Name, "namespace", req.Namespace)
+			return ctrl.Result{RequeueAfter: time.Second * 30}, err
+		}
+		// reconcile is triggered automatically if the spec is updated
+		// no need to use `Requeue` below`
+		return ctrl.Result{}, nil
+	}
 
 	resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json")
 	if err != nil {
@@ -132,17 +119,9 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
-	filter := Filter{
-		Limit:       10,
-		Score:       ">=100",
-		Descendants: ">3",
-	}
-
-	result := []GetIdResponse{}
-
 	count := 0
 	for _, id := range ids {
-		if filter.Limit == count {
+		if hn.Spec.Filter.Limit == count {
 			break
 		}
 		resp, err := http.Get(fmt.Sprintf("https://hacker-news.firebaseio.com/v0/item/%s.json", id))
@@ -157,21 +136,27 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			log.Log.Error(err, "error reading response from /item/{item-id}.json API")
 			return ctrl.Result{}, err
 		}
-		var getIdResp GetIdResponse
+		var getIdResp appsv1.GetIdResponse
 		err = json.Unmarshal(body, &getIdResp)
 		if err != nil {
 			log.Log.Error(err, "error unmarshalling /item/{item-id}.json API response")
 			return ctrl.Result{}, err
 		}
 
-		if evalCond(getIdResp.Score, filter.Score) && count < filter.Limit && evalCond(getIdResp.Descendants, filter.Descendants) {
-			result = append(result, getIdResp)
+		if evalCond(getIdResp.Score, hn.Spec.Filter.Score) && count < hn.Spec.Filter.Limit && evalCond(getIdResp.Descendants, hn.Spec.Filter.Descendants) {
+			hn.Status.Links = append(hn.Status.Links, appsv1.Link{
+				HNewsUrl:    fmt.Sprintf("https://news.ycombinator.com/item?id=%d", getIdResp.ID),
+				ArticleUrl:  getIdResp.URL,
+				Descendents: getIdResp.Descendants,
+				Score:       getIdResp.Score,
+			})
 			count++
 		}
 	}
 
-	for _, r := range result {
-		fmt.Println("TITLE:", r.Title, "SCORE", r.Score, "DESCENDENTS", r.Descendants)
+	if err := r.Status().Update(ctx, &hn); err != nil {
+		log.Log.Error(err, "unable to update hnews status", "name", req.Name, "namespace", req.Namespace)
+		return ctrl.Result{RequeueAfter: time.Second * 30}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -184,7 +169,7 @@ func (r *HNewsReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func evalCond(value int, cond Comparison) bool {
+func evalCond(value int, cond appsv1.Comparison) bool {
 	// https: //play.golang.com/p/B8ZgghEBK4k
 
 	result := scoreRegex.FindAllStringSubmatch(string(cond), -1)
