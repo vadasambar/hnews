@@ -75,23 +75,23 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if hn.Spec.Filter.Type == "" {
-		hn.Spec.Filter.Type = string(appsv1.Story)
-	}
-
-	if hn.Spec.Filter.Limit == 0 {
-		hn.Spec.Filter.Limit = 5
-	}
-
-	if hn.Spec.Filter.Score == "" {
-		hn.Spec.Filter.Score = ">200"
-	}
-
-	if hn.Spec.Filter.Descendants == "" {
-		hn.Spec.Filter.Descendants = ">5"
-	}
-
 	if hn.Spec.Filter.Type == "" || hn.Spec.Filter.Limit == 0 || hn.Spec.Filter.Score == "" || hn.Spec.Filter.Descendants == "" {
+		if hn.Spec.Filter.Type == "" {
+			hn.Spec.Filter.Type = string(appsv1.Story)
+		}
+
+		if hn.Spec.Filter.Limit == 0 {
+			hn.Spec.Filter.Limit = 5
+		}
+
+		if hn.Spec.Filter.Score == "" {
+			hn.Spec.Filter.Score = ">200"
+		}
+
+		if hn.Spec.Filter.Descendants == "" {
+			hn.Spec.Filter.Descendants = ">5"
+		}
+
 		if err := r.Update(ctx, &hn); err != nil {
 			log.Log.Error(err, "unable to update hnews", "name", req.Name, "namespace", req.Namespace)
 			return ctrl.Result{RequeueAfter: time.Second * 30}, err
@@ -120,6 +120,7 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
+	hn.Status.Links = []appsv1.Link{}
 	count := 0
 	for _, id := range ids {
 		if hn.Spec.Filter.Limit == count {
