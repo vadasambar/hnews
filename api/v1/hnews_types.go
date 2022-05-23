@@ -48,7 +48,9 @@ type GetIdResponse struct {
 }
 
 type Filter struct {
-	Limit       int        `json:"limit"`
+	// +kubebuilder:validation:Maximum:=20
+	Limit int `json:"limit"`
+	// +kubebuilder:validation:Enum:=["job" "story" "comment" "poll" "pollopt"]
 	Type        string     `json:"type"`
 	Score       Comparison `json:"score"`
 	Descendants Comparison `json:"descendents"`

@@ -40,10 +40,13 @@ spec:
                   descendents:
                     type: string
                   limit:
+                    maximum: 20
                     type: integer
                   score:
                     type: string
                   type:
+                    enum:
+                    - '["job" "story" "comment" "poll" "pollopt"]'
                     type: string
                 required:
                 - descendents
