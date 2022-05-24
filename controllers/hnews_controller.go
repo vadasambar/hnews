@@ -48,6 +48,13 @@ var (
 	scoreRegex = regexp.MustCompile("^[[:space:]]*(>|>=|=|!=|<|<=)[[:space:]]*([[:digit:]]+[[:space:]]*$)")
 )
 
+const (
+	defaultDescendents = ">5"
+	defaultScore       = ">200"
+	defaultLimit       = 5
+	defaultType        = string(appsv1.Story)
+)
+
 //+kubebuilder:rbac:groups=apps.vadasambar.com,resources=hnews,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.vadasambar.com,resources=hnews/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps.vadasambar.com,resources=hnews/finalizers,verbs=update
@@ -77,19 +84,19 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	if hn.Spec.Filter.Type == "" || hn.Spec.Filter.Limit == 0 || hn.Spec.Filter.Score == "" || hn.Spec.Filter.Descendants == "" {
 		if hn.Spec.Filter.Type == "" {
-			hn.Spec.Filter.Type = string(appsv1.Story)
+			hn.Spec.Filter.Type = defaultType
 		}
 
 		if hn.Spec.Filter.Limit == 0 {
-			hn.Spec.Filter.Limit = 5
+			hn.Spec.Filter.Limit = defaultLimit
 		}
 
 		if hn.Spec.Filter.Score == "" {
-			hn.Spec.Filter.Score = ">200"
+			hn.Spec.Filter.Score = defaultScore
 		}
 
 		if hn.Spec.Filter.Descendants == "" {
-			hn.Spec.Filter.Descendants = ">5"
+			hn.Spec.Filter.Descendants = defaultDescendents
 		}
 
 		if err := r.Update(ctx, &hn); err != nil {
