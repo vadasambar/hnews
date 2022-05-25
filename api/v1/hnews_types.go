@@ -50,8 +50,8 @@ type GetIdResponse struct {
 type Filter struct {
 	// +kubebuilder:validation:Maximum:=20
 	Limit int `json:"limit"`
-	// +kubebuilder:validation:Enum:=["job" "story" "comment" "poll" "pollopt"]
-	Type        string     `json:"type"`
+	// +kubebuilder:validation:Enum:=job;story;comment;poll;pollopt
+	Type        string     `json:"type,omitempty"`
 	Score       Comparison `json:"score"`
 	Descendants Comparison `json:"descendents"`
 }
@@ -69,6 +69,8 @@ type HNewsStatus struct {
 	Links []Link `json:"link"`
 }
 
+// Link holds the information about
+// hnews article for which satisfies the filter
 type Link struct {
 	// HNewsUrl refers to the URL of the HNews page
 	// e.g., https://news.ycombinator.com/item?id=31316372
