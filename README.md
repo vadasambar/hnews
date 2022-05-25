@@ -69,7 +69,8 @@ DESCRIPTION:
 
 FIELDS:
    descendents  <string> -required-
-     Number of direct (first level) comments in the article.
+     Number of direct (first level) comments in the article. Specify it like: descendents:
+     ">=10", descendents: "<10", descendents: "=10", descendents: "!=10"
 
    limit        <integer> -required-
      Number of Hacker News articles you want.

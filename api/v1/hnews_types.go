@@ -62,6 +62,8 @@ type Filter struct {
 	// score: ">=10", score: "<10", score: "=10", score: "!=10"
 	Score Comparison `json:"score"`
 	// Number of direct (first level) comments in the article.
+	// Specify it like:
+	// descendents: ">=10", descendents: "<10", descendents: "=10", descendents: "!=10"
 	Descendants Comparison `json:"descendents"`
 }
 

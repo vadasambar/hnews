@@ -36,23 +36,37 @@ spec:
             description: HNewsSpec defines the desired state of HNews
             properties:
               filter:
+                description: Filter allows you to filter and get the Hacker News articles
+                  you want
                 properties:
                   descendents:
+                    description: 'Number of direct (first level) comments in the article.
+                      Specify it like: descendents: ">=10", descendents: "<10", descendents:
+                      "=10", descendents: "!=10"'
                     type: string
                   limit:
+                    description: Number of Hacker News articles you want.
                     maximum: 20
                     type: integer
                   score:
+                    description: 'Score of Hacker News articles you are looking for.
+                      Specify it like: score: ">=10", score: "<10", score: "=10",
+                      score: "!=10"'
                     type: string
                   type:
+                    description: 'Type of Hacker News articles you are looking for.
+                      Has to be either of: job,story,comment,poll,pollopt'
                     enum:
-                    - '["job" "story" "comment" "poll" "pollopt"]'
+                    - job
+                    - story
+                    - comment
+                    - poll
+                    - pollopt
                     type: string
                 required:
                 - descendents
                 - limit
                 - score
-                - type
                 type: object
             type: object
           status:
@@ -62,6 +76,8 @@ spec:
                 description: 'Important: Run "make" to regenerate code after modifying
                   this file'
                 items:
+                  description: Link holds the information about Hacker News article
+                    for which satisfies the filter
                   properties:
                     article_url:
                       description: ArticleUrl refers to the URL which is shared on
