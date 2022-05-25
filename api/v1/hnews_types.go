@@ -47,12 +47,21 @@ type GetIdResponse struct {
 	URL         string `json:"url"`
 }
 
+// Filter allows you to filter and get the
+// Hacker News articles you want
 type Filter struct {
+	// Number of Hacker News articles you want.
 	// +kubebuilder:validation:Maximum:=20
 	Limit int `json:"limit"`
+	// Type of Hacker News articles you are looking for.
+	// Has to be either of: job,story,comment,poll,pollopt
 	// +kubebuilder:validation:Enum:=job;story;comment;poll;pollopt
-	Type        string     `json:"type,omitempty"`
-	Score       Comparison `json:"score"`
+	Type string `json:"type,omitempty"`
+	// Score of Hacker News articles you are looking for.
+	// Specify it like:
+	// score: ">=10", score: "<10", score: "=10", score: "!=10"
+	Score Comparison `json:"score"`
+	// Number of direct (first level) comments in the article.
 	Descendants Comparison `json:"descendents"`
 }
 
@@ -70,7 +79,7 @@ type HNewsStatus struct {
 }
 
 // Link holds the information about
-// hnews article for which satisfies the filter
+// Hacker News article for which satisfies the filter
 type Link struct {
 	// HNewsUrl refers to the URL of the HNews page
 	// e.g., https://news.ycombinator.com/item?id=31316372
