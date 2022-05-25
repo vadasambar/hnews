@@ -22,9 +22,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -34,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	appsv1 "github.com/vadasambar/hnews/api/v1"
+	helpers "github.com/vadasambar/hnews/pkg/helpers"
 )
 
 // HNewsReconciler reconciles a HNews object
@@ -42,17 +40,14 @@ type HNewsReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-var (
-	// scoreRegex is the regex for conditions ">[number-here]", ">=[number-here]", "<[number-here]",
-	// "<=[number-here]", "!=[number-here]" and "=[number-here]"
-	scoreRegex = regexp.MustCompile("^[[:space:]]*(>|>=|=|!=|<|<=)[[:space:]]*([[:digit:]]+[[:space:]]*$)")
-)
-
 const (
 	defaultDescendents = ">5"
 	defaultScore       = ">200"
 	defaultLimit       = 5
 	defaultType        = string(appsv1.Story)
+	topStoriesUrl      = "https://hacker-news.firebaseio.com/v0/topstories.json"
+	getIdRespUrl       = "https://hacker-news.firebaseio.com/v0/item/%s.json"
+	hnewsArticleUrl    = "https://news.ycombinator.com/item?id=%d"
 )
 
 //+kubebuilder:rbac:groups=apps.vadasambar.com,resources=hnews,verbs=get;list;watch;create;update;patch;delete
@@ -108,7 +103,7 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, nil
 	}
 
-	resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json")
+	resp, err := http.Get(topStoriesUrl)
 	if err != nil {
 		log.Log.Error(err, "error getting response from /topstories.json API")
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 30}, err
@@ -133,7 +128,7 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if hn.Spec.Filter.Limit == count {
 			break
 		}
-		resp, err := http.Get(fmt.Sprintf("https://hacker-news.firebaseio.com/v0/item/%s.json", id))
+		resp, err := http.Get(fmt.Sprintf(getIdRespUrl, id))
 		if err != nil {
 			log.Log.Error(err, "error getting response from /item/{item-id}.json API")
 			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 30}, err
@@ -152,9 +147,9 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, err
 		}
 
-		if evalCond(getIdResp.Score, hn.Spec.Filter.Score) && count < hn.Spec.Filter.Limit && evalCond(getIdResp.Descendants, hn.Spec.Filter.Descendants) {
+		if helpers.EvalCond(getIdResp.Score, hn.Spec.Filter.Score) && count < hn.Spec.Filter.Limit && helpers.EvalCond(getIdResp.Descendants, hn.Spec.Filter.Descendants) {
 			hn.Status.Links = append(hn.Status.Links, appsv1.Link{
-				HNewsUrl:    fmt.Sprintf("https://news.ycombinator.com/item?id=%d", getIdResp.ID),
+				HNewsUrl:    fmt.Sprintf(hnewsArticleUrl, getIdResp.ID),
 				ArticleUrl:  getIdResp.URL,
 				Descendents: getIdResp.Descendants,
 				Score:       getIdResp.Score,
@@ -176,40 +171,4 @@ func (r *HNewsReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.HNews{}).
 		Complete(r)
-}
-
-// evalCond takes a value and a condition
-// and evaluates the condition on the value
-// e.g., value = 5, cond = "<10"
-// evalCond would do 5 < 10 => returns true
-func evalCond(value int, cond appsv1.Comparison) bool {
-	// https: //play.golang.com/p/B8ZgghEBK4k
-
-	result := scoreRegex.FindAllStringSubmatch(string(cond), -1)
-	if len(result[0]) < 3 {
-		return false
-	}
-
-	comparisonOperator := strings.TrimSpace(result[0][1])
-	condValue, err := strconv.Atoi(strings.TrimSpace(result[0][2]))
-	if err != nil {
-		fmt.Println("err", err)
-		return false
-	}
-	switch comparisonOperator {
-	case ">":
-		return value > condValue
-	case ">=":
-		return value >= condValue
-	case "<":
-		return value < condValue
-	case "<=":
-		return value <= condValue
-	case "=":
-		return value == condValue
-	case "!=":
-		return value != condValue
-	}
-
-	return false
 }

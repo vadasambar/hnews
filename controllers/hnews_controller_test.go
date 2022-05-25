@@ -22,7 +22,8 @@ var _ = Describe("HNews Controller", func() {
 					Kind:       "HNews",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "hnews-sample",
+					Name:      "hnews-sample",
+					Namespace: "default",
 				},
 				Spec: hnewsv1.HNewsSpec{},
 			}
