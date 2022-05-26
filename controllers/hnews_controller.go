@@ -32,6 +32,7 @@ import (
 
 	appsv1 "github.com/vadasambar/hnews/api/v1"
 	helpers "github.com/vadasambar/hnews/pkg/helpers"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // HNewsReconciler reconciles a HNews object
@@ -158,6 +159,7 @@ func (r *HNewsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
+	hn.Status.LastSyncedAt = metav1.NewTime(time.Now())
 	if err := r.Status().Update(ctx, &hn); err != nil {
 		log.Log.Error(err, "unable to update hnews status", "name", req.Name, "namespace", req.Namespace)
 		return ctrl.Result{RequeueAfter: time.Second * 30}, err

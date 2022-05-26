@@ -77,7 +77,8 @@ type HNewsSpec struct {
 // HNewsStatus defines the observed state of HNews
 type HNewsStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
-	Links []Link `json:"link"`
+	Links        []Link      `json:"link"`
+	LastSyncedAt metav1.Time `json:"lastSyncedAt,omitempty"`
 }
 
 // Link holds the information about
@@ -99,6 +100,7 @@ type Link struct {
 //+kubebuilder:printcolumn:JSONPath=.spec.filter.score,name=Score,type=string
 //+kubebuilder:printcolumn:JSONPath=.spec.filter.limit,name=Limit,type=integer
 //+kubebuilder:printcolumn:JSONPath=.spec.filter.descendents,name=Descendents,type=string
+//+kubebuilder:printcolumn:JSONPath=.status.lastSyncedAt,name=LastSyncedAt,type=string
 // HNews is the Schema for the hnews API
 type HNews struct {
 	metav1.TypeMeta   `json:",inline"`

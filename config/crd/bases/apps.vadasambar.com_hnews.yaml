@@ -28,6 +28,9 @@ spec:
     - jsonPath: .spec.filter.descendents
       name: Descendents
       type: string
+    - jsonPath: .status.lastSyncedAt
+      name: LastSyncedAt
+      type: string
     name: v1
     schema:
       openAPIV3Schema:
@@ -85,6 +88,9 @@ spec:
           status:
             description: HNewsStatus defines the observed state of HNews
             properties:
+              lastSyncedAt:
+                format: date-time
+                type: string
               link:
                 description: 'Important: Run "make" to regenerate code after modifying
                   this file'
