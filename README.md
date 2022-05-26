@@ -14,12 +14,16 @@ spec:
     descendents: ">10"
 ```
 Result:
+```
+$ kubectl get hnews
+NAME           TYPE    SCORE   LIMIT   DESCENDENTS   LASTSYNCEDAT
+hnews-sample   story   >300    6       >10           2022-05-26T04:28:09Z
+```
 ```yaml
 apiVersion: apps.vadasambar.com/v1
 kind: HNews
 metadata:
   ...
-  generation: 3
   name: hnews-sample
   namespace: default
   ...
@@ -30,31 +34,32 @@ spec:
     score: '>300'
     type: story
 status:
+  lastSyncedAt: "2022-05-26T04:29:03Z"
   link:
-  - article_url: https://github.com/dzhang314/YouTubeDrive
-    descendents: 260
-    hnews_url: https://news.ycombinator.com/item?id=31495049
-    score: 607
+  - article_url: https://www.ftc.gov/business-guidance/blog/2022/05/twitter-pay-150-million-penalty-allegedly-breaking-its-privacy-promises-again
+    descendents: 247
+    hnews_url: https://news.ycombinator.com/item?id=31510865
+    score: 904
   - article_url: ""
-    descendents: 376
-    hnews_url: https://news.ycombinator.com/item?id=31494417
-    score: 453
-  - article_url: https://e360.yale.edu/digest/bugs-are-evolving-to-eat-plastic-study-finds
-    descendents: 221
-    hnews_url: https://news.ycombinator.com/item?id=31495836
-    score: 321
+    descendents: 1640
+    hnews_url: https://news.ycombinator.com/item?id=31503201
+    score: 742
+  - article_url: ""
+    descendents: 144
+    hnews_url: https://news.ycombinator.com/item?id=31508009
+    score: 456
+  - article_url: https://uxdesign.cc/the-forgotten-benefits-of-low-tech-user-interfaces-57fdbb6ac83
+    descendents: 385
+    hnews_url: https://news.ycombinator.com/item?id=31502193
+    score: 365
   - article_url: https://github.com/SymbianSource
-    descendents: 149
+    descendents: 186
     hnews_url: https://news.ycombinator.com/item?id=31491744
-    score: 379
-  - article_url: https://www.catphones.com/en-us/cat-s22-flip/
-    descendents: 270
-    hnews_url: https://news.ycombinator.com/item?id=31493138
-    score: 518
-  - article_url: https://gweb-research-imagen.appspot.com/
-    descendents: 610
-    hnews_url: https://news.ycombinator.com/item?id=31484562
-    score: 940
+    score: 428
+  - article_url: https://www.theglobeandmail.com/canada/article-the-great-junk-transfer-inheritance-decluttering-canada/
+    descendents: 419
+    hnews_url: https://news.ycombinator.com/item?id=31499766
+    score: 443
 ```
 ### How to use filter?
 ```yaml
@@ -82,4 +87,38 @@ FIELDS:
    type <string>
      Type of Hacker News articles you are looking for. Has to be either of:
      job,story,comment,poll,pollopt
+```
+
+# To run it locally
+1. Install the CRDs first:
+```
+make install
+```
+2. And then run the controller
+```
+make run
+```
+That's all. Make sure your kube context is pointing to the correct cluster.
+3. To uninstall, just do
+```
+make uninstall
+# Ctrl+c on make run to stop the controller
+```
+4. To run tests,
+```
+make test
+```
+
+# To run it in your cluster (untested)
+1. Build the image
+```
+make docker-build IMG=hnews-controller:latest
+```
+2. Push the image
+```
+make docker-push IMG=hnews-controller:latest # IMG should be same as the one used in `make docker-build`
+```
+3. Deploy the manifests
+```
+make deploy IMG=hnews-controller:latest # IMG should be the same as one used in `make docker-build` amd `make docker-push`
 ```
