@@ -15,7 +15,20 @@ spec:
     singular: hnews
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.filter.type
+      name: Type
+      type: string
+    - jsonPath: .spec.filter.score
+      name: Score
+      type: string
+    - jsonPath: .spec.filter.limit
+      name: Limit
+      type: integer
+    - jsonPath: .spec.filter.descendents
+      name: Descendents
+      type: string
+    name: v1
     schema:
       openAPIV3Schema:
         description: HNews is the Schema for the hnews API

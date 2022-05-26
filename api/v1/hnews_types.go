@@ -95,7 +95,10 @@ type Link struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-
+//+kubebuilder:printcolumn:JSONPath=.spec.filter.type,name=Type,type=string
+//+kubebuilder:printcolumn:JSONPath=.spec.filter.score,name=Score,type=string
+//+kubebuilder:printcolumn:JSONPath=.spec.filter.limit,name=Limit,type=integer
+//+kubebuilder:printcolumn:JSONPath=.spec.filter.descendents,name=Descendents,type=string
 // HNews is the Schema for the hnews API
 type HNews struct {
 	metav1.TypeMeta   `json:",inline"`
