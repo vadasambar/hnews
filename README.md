@@ -108,17 +108,40 @@ make uninstall
 ```
 make test
 ```
+If you want to deploy it on your local k3d cluster:
+1. Push the image to local registry ([docs](https://k3d.io/v5.2.0/usage/registries/#using-a-local-registry))  
+```
+docker ps
+...
+17bf269d0f1e   rancher/k3s:v1.20.6-k3s1   "/bin/k3s server --k…"   17 minutes ago   Up 16 minutes                                                                    k3d-hnews2-server-0
+d2b3349f12c0   registry:2                 "/entrypoint.sh /etc…"   17 minutes ago   Up 15 minutes   0.0.0.0:38181->5000/tcp                                          k3d-hnews2-registry
+```
+Note the registry port-forward `0.0.0.0:38181`
 
-# To run it in your cluster (untested)
+2. Push to local k3d registry  
+```
+make docker-build IMG=localhost:38181/hnews-controller:latest
+...
+make docker-push  IMG=localhost:38181/hnews-controller:latest
+...
+```
+3. Use the image
+```
+make deploy  IMG=hnews-controller:latest
+```
+Note that you don't need to use `localhost:38181` in the above command. 
+
+# To run it in your remote cluster
 1. Build the image
 ```
-make docker-build IMG=hnews-controller:latest
+make docker-build IMG=<remote-docker-registry>/hnews-controller:latest
 ```
+
 2. Push the image
 ```
-make docker-push IMG=hnews-controller:latest # IMG should be same as the one used in `make docker-build`
+make docker-push IMG=<remote-docker-registry>/hnews-controller:latest # IMG should be same as the one used in `make docker-build`
 ```
 3. Deploy the manifests
 ```
-make deploy IMG=hnews-controller:latest # IMG should be the same as one used in `make docker-build` amd `make docker-push`
+make deploy IMG=<remote-docker-registry>/hnews-controller:latest # IMG should be the same as one used in `make docker-build` amd `make docker-push`
 ```
